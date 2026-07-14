@@ -2,9 +2,13 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+
+	"github.com/yourusername/ai-document-summarizer/internal/config"
 )
 
 func main() {
+	config.LoadEnv()
+
 	router := gin.Default()
 
 	router.GET("/", func(c *gin.Context) {
@@ -13,5 +17,5 @@ func main() {
 		})
 	})
 
-	router.Run(":8080")
+	router.Run(":" + config.GetEnv("PORT"))
 }
