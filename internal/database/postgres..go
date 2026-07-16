@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/yourusername/ai-document-summarizer/internal/config"
+	"github.com/testgithubanjali/ai-document-summarizer/internal/config"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

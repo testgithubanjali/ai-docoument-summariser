@@ -3,11 +3,14 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/yourusername/ai-document-summarizer/internal/config"
+	"github.com/testgithubanjali/ai-document-summarizer/internal/config"
+	"github.com/testgithubanjali/ai-document-summarizer/internal/database"
 )
 
 func main() {
 	config.LoadEnv()
+
+	database.ConnectDB()
 
 	router := gin.Default()
 
