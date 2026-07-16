@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/testgithubanjali/ai-document-summarizer/internal/config"
@@ -8,7 +10,10 @@ import (
 )
 
 func main() {
+
 	config.LoadEnv()
+
+	log.Println("PORT:", config.GetEnv("PORT"))
 
 	database.ConnectDB()
 

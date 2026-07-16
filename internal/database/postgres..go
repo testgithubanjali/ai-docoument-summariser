@@ -13,6 +13,13 @@ import (
 var DB *gorm.DB
 
 func ConnectDB() {
+
+	log.Println("===== Database Configuration =====")
+	log.Println("DB_HOST:", config.GetEnv("DB_HOST"))
+	log.Println("DB_PORT:", config.GetEnv("DB_PORT"))
+	log.Println("DB_USER:", config.GetEnv("DB_USER"))
+	log.Println("DB_NAME:", config.GetEnv("DB_NAME"))
+
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		config.GetEnv("DB_HOST"),
@@ -22,13 +29,15 @@ func ConnectDB() {
 		config.GetEnv("DB_PORT"),
 	)
 
+	log.Println("DSN:", dsn)
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		log.Fatal("Failed to connect to database: ", err)
 	}
 
 	DB = db
 
-	log.Println("Database connected successfully")
+	log.Println("✅ Database connected successfully")
 }
