@@ -7,6 +7,7 @@ import (
 
 	"github.com/testgithubanjali/ai-document-summarizer/internal/config"
 	"github.com/testgithubanjali/ai-document-summarizer/internal/database"
+	"github.com/testgithubanjali/ai-document-summarizer/internal/routes"
 )
 
 func main() {
@@ -19,11 +20,10 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "AI Document Summarizer API is running",
-		})
-	})
+	routes.SetupRoutes(router)
 
-	router.Run(":" + config.GetEnv("PORT"))
+	err := router.Run(":" + config.GetEnv("PORT"))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
