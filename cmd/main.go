@@ -17,6 +17,7 @@ func main() {
 	log.Println("PORT:", config.GetEnv("PORT"))
 
 	database.ConnectDB()
+	database.MigrateDB()
 
 	router := gin.Default()
 
