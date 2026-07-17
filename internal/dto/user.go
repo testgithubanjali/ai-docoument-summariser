@@ -24,3 +24,8 @@ type LoginResponse struct {
 	AccessToken string `json:"access_token"`
 	Message     string `json:"message"`
 }
+type ProfileResponse struct {
+	ID    uint   `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}

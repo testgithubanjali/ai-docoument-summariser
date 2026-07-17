@@ -71,3 +71,6 @@ func (s *UserService) Login(email, password string) (*models.User, error) {
 
 	return user, nil
 }
+func (s *UserService) GetProfile(userID uint) (*models.User, error) {
+	return s.userRepo.FindByID(userID)
+}
