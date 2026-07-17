@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/testgithubanjali/ai-document-summarizer/internal/dto"
 	"github.com/testgithubanjali/ai-document-summarizer/internal/models"
 	"github.com/testgithubanjali/ai-document-summarizer/internal/service"
 )
@@ -20,15 +21,24 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 }
 
 func (h *UserHandler) Register(c *gin.Context) {
-	var user models.User
+	// Bind and validate request
+	var req dto.RegisterRequest
 
-	if err := c.ShouldBindJSON(&user); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request body",
+			"error": err.Error(),
 		})
 		return
 	}
 
+	// Convert DTO to Model
+	user := models.User{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	// Call service
 	if err := h.userService.Register(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to register user",
@@ -36,12 +46,13 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "User registered successfully",
-		"user": gin.H{
-			"id":    user.ID,
-			"name":  user.Name,
-			"email": user.Email,
-		},
-	})
+	// Convert Model to Response DTO
+	response := dto.RegisterResponse{
+		ID:      user.ID,
+		Name:    user.Name,
+		Email:   user.Email,
+		Message: "User registered successfully",
+	}
+
+	c.JSON(http.StatusCreated, response)
 }
