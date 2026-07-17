@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/testgithubanjali/ai-document-summarizer/internal/auth"
 
 	"github.com/testgithubanjali/ai-document-summarizer/internal/dto"
 	"github.com/testgithubanjali/ai-document-summarizer/internal/models"
@@ -68,7 +69,6 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	user, err := h.userService.Login(req.Email, req.Password)
-
 	if err != nil {
 
 		if errors.Is(err, service.ErrInvalidCredentials) {
@@ -80,11 +80,19 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
+	// Generate JWT
+	token, err := auth.GenerateToken(user.ID, user.Email)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, "Failed to generate token")
+		return
+	}
+
 	response := dto.LoginResponse{
-		ID:      user.ID,
-		Name:    user.Name,
-		Email:   user.Email,
-		Message: "Login successful",
+		ID:          user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		AccessToken: token,
+		Message:     "Login successful",
 	}
 
 	utils.Success(c, http.StatusOK, response)
