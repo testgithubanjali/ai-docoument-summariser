@@ -9,6 +9,7 @@ import (
 	"github.com/testgithubanjali/ai-document-summarizer/internal/dto"
 	"github.com/testgithubanjali/ai-document-summarizer/internal/models"
 	"github.com/testgithubanjali/ai-document-summarizer/internal/service"
+	"github.com/testgithubanjali/ai-document-summarizer/internal/utils"
 )
 
 type UserHandler struct {
@@ -26,9 +27,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		utils.ValidationError(c, err)
 		return
 	}
 
@@ -42,15 +41,11 @@ func (h *UserHandler) Register(c *gin.Context) {
 	if err != nil {
 
 		if errors.Is(err, service.ErrEmailAlreadyExists) {
-			c.JSON(http.StatusConflict, gin.H{
-				"error": err.Error(),
-			})
+			utils.Error(c, http.StatusConflict, err.Error())
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal server error",
-		})
+		utils.Error(c, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
@@ -61,5 +56,5 @@ func (h *UserHandler) Register(c *gin.Context) {
 		Message: "User registered successfully",
 	}
 
-	c.JSON(http.StatusCreated, response)
+	utils.Success(c, http.StatusCreated, response)
 }
