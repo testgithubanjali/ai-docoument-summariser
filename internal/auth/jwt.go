@@ -20,3 +20,14 @@ func GenerateToken(userID uint, email string) (string, error) {
 
 	return token.SignedString([]byte(config.GetEnv("JWT_SECRET")))
 }
+func ValidateToken(tokenString string) (*jwt.Token, error) {
+
+	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+
+		return []byte(config.GetEnv("JWT_SECRET")), nil
+	})
+}
