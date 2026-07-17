@@ -10,7 +10,10 @@ import (
 	"github.com/testgithubanjali/ai-document-summarizer/internal/repository"
 )
 
-var ErrEmailAlreadyExists = errors.New("email already exists")
+var (
+	ErrEmailAlreadyExists = errors.New("email already exists")
+	ErrInvalidCredentials = errors.New("invalid email or password")
+)
 
 type UserService struct {
 	userRepo *repository.UserRepository
@@ -45,4 +48,26 @@ func (s *UserService) Register(user *models.User) error {
 	user.Password = string(hashedPassword)
 
 	return s.userRepo.Create(user)
+}
+
+func (s *UserService) Login(email, password string) (*models.User, error) {
+
+	user, err := s.userRepo.FindByEmail(email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrInvalidCredentials
+		}
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(user.Password),
+		[]byte(password),
+	)
+
+	if err != nil {
+		return nil, ErrInvalidCredentials
+	}
+
+	return user, nil
 }

@@ -58,3 +58,34 @@ func (h *UserHandler) Register(c *gin.Context) {
 
 	utils.Success(c, http.StatusCreated, response)
 }
+func (h *UserHandler) Login(c *gin.Context) {
+
+	var req dto.LoginRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ValidationError(c, err)
+		return
+	}
+
+	user, err := h.userService.Login(req.Email, req.Password)
+
+	if err != nil {
+
+		if errors.Is(err, service.ErrInvalidCredentials) {
+			utils.Error(c, http.StatusUnauthorized, err.Error())
+			return
+		}
+
+		utils.Error(c, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	response := dto.LoginResponse{
+		ID:      user.ID,
+		Name:    user.Name,
+		Email:   user.Email,
+		Message: "Login successful",
+	}
+
+	utils.Success(c, http.StatusOK, response)
+}

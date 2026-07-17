@@ -10,18 +10,16 @@ import (
 
 func SetupRoutes(router *gin.Engine) {
 
-	// Health Check
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "AI Document Summarizer API is running",
 		})
 	})
 
-	// Dependency Injection
 	userRepo := repository.NewUserRepository()
 	userService := service.NewUserService(userRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
-	// User Routes
 	router.POST("/register", userHandler.Register)
+	router.POST("/login", userHandler.Login)
 }
