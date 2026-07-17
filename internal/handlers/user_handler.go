@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +22,7 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 }
 
 func (h *UserHandler) Register(c *gin.Context) {
-	// Bind and validate request
+
 	var req dto.RegisterRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -31,22 +32,28 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	// Convert DTO to Model
 	user := models.User{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: req.Password,
 	}
 
-	// Call service
-	if err := h.userService.Register(&user); err != nil {
+	err := h.userService.Register(&user)
+	if err != nil {
+
+		if errors.Is(err, service.ErrEmailAlreadyExists) {
+			c.JSON(http.StatusConflict, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to register user",
+			"error": "Internal server error",
 		})
 		return
 	}
 
-	// Convert Model to Response DTO
 	response := dto.RegisterResponse{
 		ID:      user.ID,
 		Name:    user.Name,
