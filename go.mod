@@ -10,7 +10,7 @@ require (
 	gorm.io/gorm v1.25.10
 )
 
-require github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728 // indirect
+require github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728
 
 require (
 	github.com/bytedance/gopkg v0.1.3 // indirect
