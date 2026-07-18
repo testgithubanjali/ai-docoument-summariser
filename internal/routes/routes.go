@@ -20,6 +20,10 @@ func SetupRoutes(router *gin.Engine) {
 	userService := service.NewUserService(userRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
+	documentRepo := repository.NewDocumentRepository()
+	documentService := service.NewDocumentService(documentRepo)
+	documentHandler := handlers.NewDocumentHandler(documentService)
+
 	router.POST("/register", userHandler.Register)
 	router.POST("/login", userHandler.Login)
 
@@ -27,4 +31,5 @@ func SetupRoutes(router *gin.Engine) {
 	protected.Use(middleware.AuthMiddleware())
 
 	protected.GET("/profile", userHandler.GetProfile)
+	protected.POST("/documents/upload", documentHandler.Upload)
 }

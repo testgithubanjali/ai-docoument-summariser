@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -49,18 +50,35 @@ func (h *DocumentHandler) Upload(c *gin.Context) {
 		return
 	}
 
-	err = os.MkdirAll("uploads", os.ModePerm)
-	if err != nil {
+	// Create uploads directory if it doesn't exist
+	if err := os.MkdirAll("uploads", os.ModePerm); err != nil {
 		utils.Error(c, http.StatusInternalServerError, "Failed to create upload directory")
 		return
 	}
 
+	// Generate unique filename
 	fileName := strconv.FormatInt(time.Now().UnixNano(), 10) + ext
 	filePath := filepath.Join("uploads", fileName)
 
+	// Save uploaded file
 	if err := c.SaveUploadedFile(file, filePath); err != nil {
 		utils.Error(c, http.StatusInternalServerError, "Failed to save file")
 		return
+	}
+
+	// Extract text only from PDF files (temporary testing)
+	var extractedText string
+
+	if ext == ".pdf" {
+		extractedText, err = utils.ExtractPDFText(filePath)
+		if err != nil {
+			utils.Error(c, http.StatusInternalServerError, "Failed to extract PDF text")
+			return
+		}
+
+		log.Println("========== EXTRACTED PDF TEXT ==========")
+		log.Println(extractedText)
+		log.Println("========================================")
 	}
 
 	document := models.Document{
