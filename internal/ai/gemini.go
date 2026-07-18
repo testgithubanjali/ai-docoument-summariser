@@ -3,13 +3,22 @@ package ai
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"google.golang.org/genai"
 
 	"github.com/testgithubanjali/ai-document-summarizer/internal/config"
 )
 
+const model = "gemini-2.5-flash"
+
 func GenerateSummary(text string) (string, error) {
+
+	text = strings.TrimSpace(text)
+
+	if text == "" {
+		return "", fmt.Errorf("document contains no readable text")
+	}
 
 	client, err := genai.NewClient(context.Background(), &genai.ClientConfig{
 		APIKey: config.GetEnv("GEMINI_API_KEY"),
@@ -19,15 +28,16 @@ func GenerateSummary(text string) (string, error) {
 	}
 
 	prompt := fmt.Sprintf(`
-You are an AI document summarizer.
+You are an expert AI document summarizer.
 
-Summarize the following document.
+Create a professional summary of the following document.
 
-Requirements:
-- Keep the summary concise.
+Instructions:
+- Keep the summary under 200 words.
 - Use bullet points.
-- Highlight important information.
-- Maximum 200 words.
+- Focus on the most important information.
+- Ignore repeated content.
+- Return only the summary.
 
 Document:
 
@@ -36,7 +46,7 @@ Document:
 
 	resp, err := client.Models.GenerateContent(
 		context.Background(),
-		"gemini-2.5-flash",
+		model,
 		genai.Text(prompt),
 		nil,
 	)
@@ -44,5 +54,5 @@ Document:
 		return "", err
 	}
 
-	return resp.Text(), nil
+	return strings.TrimSpace(resp.Text()), nil
 }
