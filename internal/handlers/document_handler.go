@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -35,7 +34,11 @@ func (h *DocumentHandler) Upload(c *gin.Context) {
 		return
 	}
 
-	userID := uint(userIDValue.(float64))
+	userID, ok := userIDValue.(float64)
+	if !ok {
+		utils.Error(c, http.StatusUnauthorized, "Invalid user")
+		return
+	}
 
 	file, err := c.FormFile("document")
 	if err != nil {
@@ -50,54 +53,38 @@ func (h *DocumentHandler) Upload(c *gin.Context) {
 		return
 	}
 
-	// Create uploads directory if it doesn't exist
 	if err := os.MkdirAll("uploads", os.ModePerm); err != nil {
 		utils.Error(c, http.StatusInternalServerError, "Failed to create upload directory")
 		return
 	}
 
-	// Generate unique filename
 	fileName := strconv.FormatInt(time.Now().UnixNano(), 10) + ext
 	filePath := filepath.Join("uploads", fileName)
 
-	// Save uploaded file
 	if err := c.SaveUploadedFile(file, filePath); err != nil {
 		utils.Error(c, http.StatusInternalServerError, "Failed to save file")
 		return
 	}
 
-	// Extract text only from PDF files (temporary testing)
-	var extractedText string
-
-	if ext == ".pdf" {
-		extractedText, err = utils.ExtractPDFText(filePath)
-		if err != nil {
-			utils.Error(c, http.StatusInternalServerError, "Failed to extract PDF text")
-			return
-		}
-
-		log.Println("========== EXTRACTED PDF TEXT ==========")
-		log.Println(extractedText)
-		log.Println("========================================")
-	}
-
 	document := models.Document{
-		UserID:   userID,
+		UserID:   uint(userID),
 		FileName: file.Filename,
 		FilePath: filePath,
 		FileType: ext,
 	}
 
-	if err := h.documentService.Create(&document); err != nil {
-		utils.Error(c, http.StatusInternalServerError, "Failed to save document")
+	summary, err := h.documentService.ProcessDocument(&document)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	response := dto.UploadResponse{
+	response := dto.ProcessDocumentResponse{
 		ID:       document.ID,
 		FileName: document.FileName,
 		FileType: document.FileType,
-		Message:  "Document uploaded successfully",
+		Summary:  summary,
+		Message:  "Document processed successfully",
 	}
 
 	utils.Success(c, http.StatusCreated, response)
