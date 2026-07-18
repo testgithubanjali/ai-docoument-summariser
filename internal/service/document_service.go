@@ -12,23 +12,28 @@ import (
 
 type DocumentService struct {
 	documentRepo *repository.DocumentRepository
+	summaryRepo  *repository.SummaryRepository
 }
 
-func NewDocumentService(repo *repository.DocumentRepository) *DocumentService {
+func NewDocumentService(
+	documentRepo *repository.DocumentRepository,
+	summaryRepo *repository.SummaryRepository,
+) *DocumentService {
 	return &DocumentService{
-		documentRepo: repo,
+		documentRepo: documentRepo,
+		summaryRepo:  summaryRepo,
 	}
 }
 
 func (s *DocumentService) ProcessDocument(document *models.Document) (string, error) {
-
 	var (
-		text string
-		err  error
+		text    string
+		summary string
+		err     error
 	)
 
+	// Extract text based on file type
 	switch document.FileType {
-
 	case ".pdf":
 		text, err = utils.ExtractPDFText(document.FilePath)
 		if err != nil {
@@ -45,13 +50,27 @@ func (s *DocumentService) ProcessDocument(document *models.Document) (string, er
 		return "", errors.New("unsupported file type")
 	}
 
-	summary, err := ai.GenerateSummary(text)
+	// Generate summary using Gemini
+	summary, err = ai.GenerateSummary(text)
 	if err != nil {
 		_ = os.Remove(document.FilePath)
 		return "", err
 	}
 
+	// Save document metadata
 	if err := s.documentRepo.Create(document); err != nil {
+		_ = os.Remove(document.FilePath)
+		return "", err
+	}
+
+	// Save summary
+	summaryModel := &models.Summary{
+		DocumentID: document.ID,
+		Content:    summary,
+		ModelUsed:  "gemini-2.5-flash",
+	}
+
+	if err := s.summaryRepo.Create(summaryModel); err != nil {
 		_ = os.Remove(document.FilePath)
 		return "", err
 	}

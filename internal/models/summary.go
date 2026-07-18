@@ -7,5 +7,5 @@ type Summary struct {
 
 	DocumentID uint   `gorm:"not null"`
 	Content    string `gorm:"type:text;not null"`
-	Model      string `gorm:"not null"`
+	ModelUsed  string `gorm:"not null"`
 }
