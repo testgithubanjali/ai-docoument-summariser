@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-
 	"github.com/testgithubanjali/ai-document-summarizer/internal/handlers"
+	"github.com/testgithubanjali/ai-document-summarizer/internal/middleware"
 	"github.com/testgithubanjali/ai-document-summarizer/internal/repository"
 	"github.com/testgithubanjali/ai-document-summarizer/internal/service"
 )
@@ -22,4 +22,9 @@ func SetupRoutes(router *gin.Engine) {
 
 	router.POST("/register", userHandler.Register)
 	router.POST("/login", userHandler.Login)
+
+	protected := router.Group("/")
+	protected.Use(middleware.AuthMiddleware())
+
+	protected.GET("/profile", userHandler.GetProfile)
 }

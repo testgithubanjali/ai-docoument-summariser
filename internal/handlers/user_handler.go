@@ -97,3 +97,34 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 	utils.Success(c, http.StatusOK, response)
 }
+func (h *UserHandler) GetProfile(c *gin.Context) {
+
+	userIDValue, exists := c.Get("user_id")
+	if !exists {
+		utils.Error(c, http.StatusUnauthorized, "User not found in token")
+		return
+	}
+
+	// JWT numeric claims are decoded as float64
+	userIDFloat, ok := userIDValue.(float64)
+	if !ok {
+		utils.Error(c, http.StatusUnauthorized, "Invalid user ID")
+		return
+	}
+
+	userID := uint(userIDFloat)
+
+	user, err := h.userService.GetProfile(userID)
+	if err != nil {
+		utils.Error(c, http.StatusNotFound, "User not found")
+		return
+	}
+
+	response := dto.ProfileResponse{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+	}
+
+	utils.Success(c, http.StatusOK, response)
+}
