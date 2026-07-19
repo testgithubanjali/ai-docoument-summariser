@@ -30,8 +30,11 @@ func SetupRoutes(router *gin.Engine) {
 		documentRepo,
 		summaryRepo,
 	)
-
 	documentHandler := handlers.NewDocumentHandler(documentService)
+
+	// Summary dependencies
+	summaryService := service.NewSummaryService(summaryRepo)
+	summaryHandler := handlers.NewSummaryHandler(summaryService)
 
 	// Public routes
 	router.POST("/register", userHandler.Register)
@@ -41,6 +44,14 @@ func SetupRoutes(router *gin.Engine) {
 	protected := router.Group("/")
 	protected.Use(middleware.AuthMiddleware())
 
+	// User
 	protected.GET("/profile", userHandler.GetProfile)
+
+	// Document
 	protected.POST("/documents/upload", documentHandler.Upload)
+
+	// Summary
+	protected.GET("/summaries", summaryHandler.GetAll)
+	protected.GET("/summaries/:id", summaryHandler.GetByID)
+	protected.DELETE("/summaries/:id", summaryHandler.Delete)
 }

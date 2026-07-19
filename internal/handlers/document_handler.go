@@ -28,15 +28,9 @@ func NewDocumentHandler(service *service.DocumentService) *DocumentHandler {
 
 func (h *DocumentHandler) Upload(c *gin.Context) {
 
-	userIDValue, exists := c.Get("user_id")
+	userID, exists := c.Get("userID")
 	if !exists {
 		utils.Error(c, http.StatusUnauthorized, "Unauthorized")
-		return
-	}
-
-	userID, ok := userIDValue.(float64)
-	if !ok {
-		utils.Error(c, http.StatusUnauthorized, "Invalid user")
 		return
 	}
 
@@ -67,7 +61,7 @@ func (h *DocumentHandler) Upload(c *gin.Context) {
 	}
 
 	document := models.Document{
-		UserID:   uint(userID),
+		UserID:   userID.(uint),
 		FileName: file.Filename,
 		FilePath: filePath,
 		FileType: ext,

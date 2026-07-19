@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 
@@ -29,15 +30,25 @@ func ConnectDB() {
 		config.GetEnv("DB_PORT"),
 	)
 
-	log.Println("DSN:", dsn)
-
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
 	if err != nil {
-		log.Fatal("Failed to connect to database: ", err)
+		log.Fatal("❌ Failed to connect to database:", err)
 	}
 
 	DB = db
 
+	// Verify which database is actually connected
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatal("❌ Failed to get SQL DB:", err)
+	}
+
+	var currentDatabase string
+	err = sqlDB.QueryRow("SELECT current_database()").Scan(&currentDatabase)
+	if err != nil && err != sql.ErrNoRows {
+		log.Fatal("❌ Failed to get current database:", err)
+	}
+
+	log.Println("✅ Connected Database:", currentDatabase)
 	log.Println("✅ Database connected successfully")
 }
